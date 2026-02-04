@@ -1,7 +1,7 @@
 package dev.yewintnaing.logic;
 
 import dev.yewintnaing.protocol.RespArray;
-import dev.yewintnaing.protocol.RespString;
+import dev.yewintnaing.protocol.RespBulkString;
 import dev.yewintnaing.storage.RedisStorage;
 
 public class LRangeCommand implements RedisCommand {
@@ -10,10 +10,10 @@ public class LRangeCommand implements RedisCommand {
 
         var elements = args.elements();
 
-        if (elements.get(1) instanceof RespString(String key)) {
-
-            long start = Long.parseLong(((RespString) elements.get(2)).value());
-            long stop = Long.parseLong(((RespString) elements.get(3)).value());
+        if (elements.get(1) instanceof RespBulkString e) {
+            String key = e.toString();
+            long start = Long.parseLong(((RespBulkString) elements.get(2)).asUtf8());
+            long stop = Long.parseLong(((RespBulkString) elements.get(3)).asUtf8());
 
 
             return RedisStorage.getListRange(key, start, stop)

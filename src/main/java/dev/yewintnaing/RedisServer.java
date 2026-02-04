@@ -1,6 +1,8 @@
 package dev.yewintnaing;
 
+import dev.yewintnaing.logic.CommandProcessor;
 import dev.yewintnaing.storage.CleanerTask;
+import dev.yewintnaing.storage.PersistenceManager;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -12,6 +14,9 @@ public class RedisServer {
     public static void main(String[] args) throws IOException {
 
         int port = 6379;
+
+        recovery();
+
 
         CleanerTask.init();
 
@@ -28,6 +33,12 @@ public class RedisServer {
 
         }
 
+    }
+
+    public static void recovery() throws IOException {
+        for (var data : PersistenceManager.readAof()){
+            CommandProcessor.handle(data);
+        }
     }
 
 }

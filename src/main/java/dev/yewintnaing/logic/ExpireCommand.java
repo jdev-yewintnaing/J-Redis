@@ -1,7 +1,7 @@
 package dev.yewintnaing.logic;
 
 import dev.yewintnaing.protocol.RespArray;
-import dev.yewintnaing.protocol.RespString;
+import dev.yewintnaing.protocol.RespBulkString;
 import dev.yewintnaing.storage.RedisStorage;
 
 class ExpireCommand implements RedisCommand {
@@ -12,9 +12,16 @@ class ExpireCommand implements RedisCommand {
             return "-ERR wrong number of arguments for 'expire' command\r\n";
         }
 
-        String key = ((RespString) args.elements().get(1)).value();
-        long seconds = Long.parseLong(((RespString) args.elements().get(2)).value());
+        String key = ((RespBulkString) args.elements().get(1)).asUtf8();
+        long seconds = Long.parseLong(((RespBulkString) args.elements().get(2)).asUtf8());
 
         return RedisStorage.setExpiry(key, seconds) ? ":1\r\n" : ":0\r\n";
     }
+
+    @Override
+    public boolean isWriteCommand() {
+
+        return true;
+    }
+
 }

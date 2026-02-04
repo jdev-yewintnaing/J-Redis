@@ -1,7 +1,7 @@
 package dev.yewintnaing.logic;
 
 import dev.yewintnaing.protocol.RespArray;
-import dev.yewintnaing.protocol.RespString;
+import dev.yewintnaing.protocol.RespBulkString;
 import dev.yewintnaing.storage.RedisStorage;
 
 class SetCommand implements RedisCommand {
@@ -12,11 +12,17 @@ class SetCommand implements RedisCommand {
             return "-ERR wrong number of arguments for 'set' command\r\n";
         }
 
-        String key = ((RespString) args.elements().get(1)).value();
-        String val = ((RespString) args.elements().get(2)).value();
+        String key = ((RespBulkString) args.elements().get(1)).asUtf8();
+        String val = ((RespBulkString) args.elements().get(2)).asUtf8();
 
         RedisStorage.putString(key, val);
 
         return "+OK\r\n";
     }
+
+    @Override
+    public boolean isWriteCommand() {
+        return true;
+    }
+
 }

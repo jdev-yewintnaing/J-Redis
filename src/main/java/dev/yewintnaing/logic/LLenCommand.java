@@ -1,7 +1,7 @@
 package dev.yewintnaing.logic;
 
 import dev.yewintnaing.protocol.RespArray;
-import dev.yewintnaing.protocol.RespString;
+import dev.yewintnaing.protocol.RespBulkString;
 import dev.yewintnaing.storage.RedisStorage;
 
 public class LLenCommand implements RedisCommand {
@@ -11,9 +11,9 @@ public class LLenCommand implements RedisCommand {
 
         var elements = args.elements();
 
-        if (elements.get(1) instanceof RespString(String key)) {
+        if (elements.get(1) instanceof RespBulkString key) {
 
-            var optSize = RedisStorage.getLength(key);
+            var optSize = RedisStorage.getLength(key.asUtf8());
 
             return optSize.map(aLong -> ":" + aLong + "\r\n").orElse("-WRONGTYPE" + "\r\n");
         }

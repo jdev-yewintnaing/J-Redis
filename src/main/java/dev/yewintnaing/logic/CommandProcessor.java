@@ -1,7 +1,8 @@
 package dev.yewintnaing.logic;
 
 import dev.yewintnaing.protocol.RespArray;
-import dev.yewintnaing.protocol.RespString;
+import dev.yewintnaing.protocol.RespBulkString;
+import dev.yewintnaing.storage.PersistenceManager;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -22,12 +23,18 @@ public class CommandProcessor {
 
     public static String handle(RespArray request) {
         var elements = request.elements();
-        String cmdName = ((RespString) elements.getFirst()).value().toUpperCase();
+        String cmdName = ((RespBulkString) elements.getFirst()).asUtf8().toUpperCase();
 
         RedisCommand command = COMMANDS.get(cmdName);
 
+
+
         if (command == null) {
             return "-ERR unknown command '" + cmdName + "'\r\n";
+        }
+
+        if (command.isWriteCommand()) {
+            PersistenceManager.log(request);
         }
 
         return command.execute(request);
