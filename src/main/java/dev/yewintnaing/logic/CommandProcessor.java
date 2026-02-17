@@ -20,15 +20,15 @@ public class CommandProcessor {
         COMMANDS.put("LLEN", new LLenCommand());
         COMMANDS.put("INCR", new IncrCommand());
         COMMANDS.put("LRANGE", new LRangeCommand());
+        COMMANDS.put("SUBSCRIBE", new SubscribeCommand());
+        COMMANDS.put("PUBLISH", new PublishCommand());
     }
 
-    public static String handle(RespArray request) {
+    public String handle(RespArray request, dev.yewintnaing.handler.ClientHandler client) {
         var elements = request.elements();
         String cmdName = ((RespBulkString) elements.getFirst()).asUtf8().toUpperCase();
 
         RedisCommand command = COMMANDS.get(cmdName);
-
-
 
         if (command == null) {
             return "-ERR unknown command '" + cmdName + "'\r\n";
@@ -38,6 +38,6 @@ public class CommandProcessor {
             PersistenceManager.log(request);
         }
 
-        return command.execute(request);
+        return command.execute(request, client);
     }
 }

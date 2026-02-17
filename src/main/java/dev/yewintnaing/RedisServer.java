@@ -4,11 +4,10 @@ import dev.yewintnaing.logic.CommandProcessor;
 import dev.yewintnaing.storage.CleanerTask;
 import dev.yewintnaing.storage.PersistenceManager;
 
+import dev.yewintnaing.handler.ClientHandler;
 import java.io.*;
 import java.net.ServerSocket;
 import java.util.concurrent.Executors;
-
-import static dev.yewintnaing.handler.ClientHandler.handleClient;
 
 public class RedisServer {
     public static void main(String[] args) throws IOException {
@@ -16,7 +15,6 @@ public class RedisServer {
         int port = 6379;
 
         recovery();
-
 
         CleanerTask.init();
 
@@ -28,7 +26,7 @@ public class RedisServer {
             while (true) {
                 var client = serverSocket.accept();
 
-                executor.submit(() -> handleClient(client));
+                executor.submit(new ClientHandler(client));
             }
 
         }
@@ -36,8 +34,11 @@ public class RedisServer {
     }
 
     public static void recovery() throws IOException {
-        for (var data : PersistenceManager.readAof()){
-            CommandProcessor.handle(data);
+        CommandProcessor processor = new CommandProcessor();
+        for (var data : PersistenceManager.readAof()) {
+            // AOF replay doesn't have a real client, and write commands don't utilize it
+            // currently
+            processor.handle(data, null);
         }
     }
 

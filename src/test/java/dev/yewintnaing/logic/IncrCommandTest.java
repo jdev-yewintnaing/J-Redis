@@ -27,11 +27,11 @@ class IncrCommandTest {
                 new RespBulkString("INCR".getBytes()),
                 new RespBulkString(key.getBytes())));
 
-        String result = incrCommand.execute(args);
+        String result = incrCommand.execute(args, null);
         assertEquals(":1\r\n", result);
 
         // Incr again
-        result = incrCommand.execute(args);
+        result = incrCommand.execute(args, null);
         assertEquals(":2\r\n", result);
     }
 
@@ -44,7 +44,7 @@ class IncrCommandTest {
                 new RespBulkString("INCR".getBytes()),
                 new RespBulkString(key.getBytes())));
 
-        String result = incrCommand.execute(args);
+        String result = incrCommand.execute(args, null);
         assertEquals(":11\r\n", result);
     }
 
@@ -57,7 +57,7 @@ class IncrCommandTest {
                 new RespBulkString("INCR".getBytes()),
                 new RespBulkString(key.getBytes())));
 
-        String result = incrCommand.execute(args);
+        String result = incrCommand.execute(args, null);
         assertEquals("-ERR value is not an integer or out of range\r\n", result);
     }
 
@@ -66,7 +66,7 @@ class IncrCommandTest {
         RespArray args = new RespArray(List.of(
                 new RespBulkString("INCR".getBytes())));
 
-        String result = incrCommand.execute(args);
+        String result = incrCommand.execute(args, null);
         assertEquals("-ERR wrong number of arguments for 'incr' command\r\n", result);
     }
 }

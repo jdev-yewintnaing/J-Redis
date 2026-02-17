@@ -6,7 +6,7 @@ import dev.yewintnaing.storage.RedisStorage;
 
 class ExpireCommand implements RedisCommand {
     @Override
-    public String execute(RespArray args) {
+    public String execute(RespArray args, dev.yewintnaing.handler.ClientHandler client) {
 
         if (args.elements().size() < 3) {
             return "-ERR wrong number of arguments for 'expire' command\r\n";

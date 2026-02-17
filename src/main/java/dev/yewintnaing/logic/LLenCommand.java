@@ -7,7 +7,7 @@ import dev.yewintnaing.storage.RedisStorage;
 public class LLenCommand implements RedisCommand {
 
     @Override
-    public String execute(RespArray args) {
+    public String execute(RespArray args, dev.yewintnaing.handler.ClientHandler client) {
 
         var elements = args.elements();
 
