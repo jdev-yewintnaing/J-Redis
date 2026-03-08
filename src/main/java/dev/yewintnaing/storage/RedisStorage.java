@@ -9,6 +9,14 @@ public class RedisStorage {
 
     private static final ConcurrentHashMap<String, RedisValue> DATA = new ConcurrentHashMap<>();
 
+    public static java.util.Map<String, RedisValue> getSnapshot() {
+        return new java.util.HashMap<>(DATA);
+    }
+
+    public static void clear() {
+        DATA.clear();
+    }
+
     public static long incr(String key) {
 
         var data = (LongValue) DATA.compute(key, (k, old) -> {

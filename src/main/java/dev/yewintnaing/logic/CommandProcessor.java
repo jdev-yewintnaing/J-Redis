@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class CommandProcessor {
+
     private static final Map<String, RedisCommand> COMMANDS = new HashMap<>();
 
     static {
@@ -32,6 +33,7 @@ public class CommandProcessor {
         COMMANDS.put("EXISTS", new ExistsCommand());
         COMMANDS.put("KEYS", new KeysCommand());
         COMMANDS.put("TTL", new TTLCommand());
+        COMMANDS.put("BGREWRITEAOF", new BgRewriteAofCommand());
     }
 
     public String handle(RespArray request, dev.yewintnaing.handler.ClientHandler client) {
