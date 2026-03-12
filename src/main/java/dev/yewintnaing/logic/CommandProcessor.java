@@ -34,6 +34,11 @@ public class CommandProcessor {
         COMMANDS.put("KEYS", new KeysCommand());
         COMMANDS.put("TTL", new TTLCommand());
         COMMANDS.put("BGREWRITEAOF", new BgRewriteAofCommand());
+        COMMANDS.put("SADD", new SAddCommand());
+        COMMANDS.put("SREM", new SRemCommand());
+        COMMANDS.put("SMEMBERS", new SMembersCommand());
+        COMMANDS.put("SISMEMBER", new SIsMemberCommand());
+        COMMANDS.put("SCARD", new SCardCommand());
     }
 
     public String handle(RespArray request, dev.yewintnaing.handler.ClientHandler client) {

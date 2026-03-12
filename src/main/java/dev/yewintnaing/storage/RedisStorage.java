@@ -263,6 +263,9 @@ public class RedisStorage {
                 case HashValue hashValue -> {
                     return new HashValue(hashValue.value(), expiryTime);
                 }
+                case SetValue setValue -> {
+                    return new SetValue(setValue.value(), expiryTime);
+                }
                 default -> throw new IllegalStateException("Invalid Type");
             }
         });
@@ -361,6 +364,88 @@ public class RedisStorage {
         }
         long remaining = (ttl - System.currentTimeMillis()) / 1000;
         return Math.max(0, remaining);
+    }
+
+    public static int sadd(String key, String... members) {
+        var addedCount = new int[1];
+        DATA.compute(key, (k, old) -> {
+            if (old == null || old.isExpired()) {
+                var set = java.util.concurrent.ConcurrentHashMap.<String>newKeySet();
+                for (String member : members) {
+                    if (set.add(member)) {
+                        addedCount[0]++;
+                    }
+                }
+                return new SetValue(set, 0);
+            }
+
+            if (old instanceof SetValue sv) {
+                for (String member : members) {
+                    if (sv.value().add(member)) {
+                        addedCount[0]++;
+                    }
+                }
+                return sv;
+            }
+
+            throw new IllegalStateException("WRONGTYPE Operation against a key holding the wrong kind of value");
+        });
+        return addedCount[0];
+    }
+
+    public static int srem(String key, String... members) {
+        var removedCount = new int[1];
+        DATA.computeIfPresent(key, (k, old) -> {
+            if (old.isExpired()) {
+                return null;
+            }
+            if (old instanceof SetValue sv) {
+                for (String member : members) {
+                    if (sv.value().remove(member)) {
+                        removedCount[0]++;
+                    }
+                }
+                return sv.value().isEmpty() ? null : sv;
+            }
+            throw new IllegalStateException("WRONGTYPE Operation against a key holding the wrong kind of value");
+        });
+        return removedCount[0];
+    }
+
+    public static Optional<java.util.Set<String>> smembers(String key) {
+        RedisValue value = DATA.get(key);
+        if (value == null || value.isExpired()) {
+            if (value != null) DATA.remove(key);
+            return Optional.empty();
+        }
+        if (value instanceof SetValue sv) {
+            return Optional.of(sv.value());
+        }
+        throw new IllegalStateException("WRONGTYPE Operation against a key holding the wrong kind of value");
+    }
+
+    public static boolean sismember(String key, String member) {
+        RedisValue value = DATA.get(key);
+        if (value == null || value.isExpired()) {
+            if (value != null) DATA.remove(key);
+            return false;
+        }
+        if (value instanceof SetValue sv) {
+            return sv.value().contains(member);
+        }
+        throw new IllegalStateException("WRONGTYPE Operation against a key holding the wrong kind of value");
+    }
+
+    public static int scard(String key) {
+        RedisValue value = DATA.get(key);
+        if (value == null || value.isExpired()) {
+            if (value != null) DATA.remove(key);
+            return 0;
+        }
+        if (value instanceof SetValue sv) {
+            return sv.value().size();
+        }
+        throw new IllegalStateException("WRONGTYPE Operation against a key holding the wrong kind of value");
     }
 
 }

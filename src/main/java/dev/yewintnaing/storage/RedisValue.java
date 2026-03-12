@@ -1,6 +1,6 @@
 package dev.yewintnaing.storage;
 
-public sealed interface RedisValue permits ListValue, LongValue, StringValue, HashValue {
+public sealed interface RedisValue permits ListValue, LongValue, StringValue, HashValue, SetValue {
     public long expiryTime();
 
     default boolean isExpired() {
