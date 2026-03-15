@@ -10,8 +10,12 @@ public class LRangeCommand implements RedisCommand {
 
         var elements = args.elements();
 
+        if (elements.size() < 4) {
+            return "-ERR wrong number of arguments for 'lrange' command\r\n";
+        }
+
         if (elements.get(1) instanceof RespBulkString e) {
-            String key = e.toString();
+            String key = e.asUtf8();
             long start = Long.parseLong(((RespBulkString) elements.get(2)).asUtf8());
             long stop = Long.parseLong(((RespBulkString) elements.get(3)).asUtf8());
 
@@ -29,6 +33,6 @@ public class LRangeCommand implements RedisCommand {
 
         }
 
-        return "";
+        return "-ERR invalid arguments for 'lrange' command\r\n";
     }
 }

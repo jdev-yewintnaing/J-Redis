@@ -1,5 +1,7 @@
 package dev.yewintnaing.storage;
 
+import dev.yewintnaing.RedisServer;
+import dev.yewintnaing.logic.LRangeCommand;
 import dev.yewintnaing.protocol.RespArray;
 import dev.yewintnaing.protocol.RespBulkString;
 import org.junit.jupiter.api.AfterEach;
@@ -68,6 +70,36 @@ class PersistenceTest {
         // Should only have 1 SET command for user:1 now
         assertEquals(1,
                 history.stream().filter(c -> ((RespBulkString) c.elements().get(1)).asUtf8().equals("user:1")).count());
+    }
+
+    @Test
+    void testAofRewriteRecoveryPreservesListWithoutDuplicatingLog() throws IOException {
+        RedisStorage.pushList("tasks", "third");
+        PersistenceManager.log(createCommand("LPUSH", "tasks", "third"));
+
+        RedisStorage.pushList("tasks", "second");
+        PersistenceManager.log(createCommand("LPUSH", "tasks", "second"));
+
+        RedisStorage.pushList("tasks", "first");
+        PersistenceManager.log(createCommand("LPUSH", "tasks", "first"));
+
+        PersistenceManager.sync();
+        PersistenceManager.rewriteAof();
+        long sizeBeforeRecovery = Files.size(AOF_PATH);
+
+        RedisStorage.clear();
+        RedisServer.recovery();
+        PersistenceManager.sync();
+
+        String result = new LRangeCommand().execute(new RespArray(List.of(
+                new RespBulkString("LRANGE".getBytes()),
+                new RespBulkString("tasks".getBytes()),
+                new RespBulkString("0".getBytes()),
+                new RespBulkString("-1".getBytes()))), null);
+
+        assertEquals("*3\r\n$5\r\nfirst\r\n$6\r\nsecond\r\n$5\r\nthird\r\n", result);
+        assertEquals(sizeBeforeRecovery, Files.size(AOF_PATH),
+                "Recovery should replay AOF without appending duplicate commands");
     }
 
     private RespArray createCommand(String... parts) {

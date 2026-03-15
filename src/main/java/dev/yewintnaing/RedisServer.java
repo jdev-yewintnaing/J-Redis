@@ -36,9 +36,7 @@ public class RedisServer {
     public static void recovery() throws IOException {
         CommandProcessor processor = new CommandProcessor();
         for (var data : PersistenceManager.readAof()) {
-            // AOF replay doesn't have a real client, and write commands don't utilize it
-            // currently
-            processor.handle(data, null);
+            processor.handle(data, null, false);
         }
     }
 

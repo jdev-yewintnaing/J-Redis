@@ -138,6 +138,26 @@ public class RedisStorage {
 
     }
 
+    public static void pushListRight(String key, String value) {
+
+        DATA.compute(key, (k, old) -> {
+
+            if (old == null) {
+                var listValue = new ListValue(new ConcurrentLinkedDeque<>(), 0);
+                listValue.value().addLast(value);
+                return listValue;
+            }
+
+            if (old instanceof ListValue listValue) {
+                listValue.value().addLast(value);
+                return listValue;
+            }
+
+            throw new IllegalStateException("Invalid type!");
+        });
+
+    }
+
     public static int hset(String key, String field, String value) {
 
         DATA.compute(key, (k, old) -> {

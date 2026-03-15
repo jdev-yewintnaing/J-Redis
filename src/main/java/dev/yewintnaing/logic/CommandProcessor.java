@@ -17,6 +17,7 @@ public class CommandProcessor {
         COMMANDS.put("GET", new GetCommand());
         COMMANDS.put("EXPIRE", new ExpireCommand());
         COMMANDS.put("LPUSH", new LPushCommand());
+        COMMANDS.put("RPUSH", new RPushCommand());
         COMMANDS.put("LPOP", new LPopCommand());
         COMMANDS.put("LLEN", new LLenCommand());
         COMMANDS.put("INCR", new IncrCommand());
@@ -42,6 +43,10 @@ public class CommandProcessor {
     }
 
     public String handle(RespArray request, dev.yewintnaing.handler.ClientHandler client) {
+        return handle(request, client, true);
+    }
+
+    public String handle(RespArray request, dev.yewintnaing.handler.ClientHandler client, boolean persistWrite) {
         var elements = request.elements();
         String cmdName = ((RespBulkString) elements.getFirst()).asUtf8().toUpperCase();
 
@@ -51,7 +56,7 @@ public class CommandProcessor {
             return "-ERR unknown command '" + cmdName + "'\r\n";
         }
 
-        if (command.isWriteCommand()) {
+        if (persistWrite && command.isWriteCommand()) {
             PersistenceManager.log(request);
         }
 
